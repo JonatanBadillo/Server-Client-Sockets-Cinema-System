@@ -143,6 +143,7 @@ void inicializarDulces(Dulce *dulces){
     dulces[0].costo = 75;//costo palomitas
     dulces[1].costo = 55;//costo nachos
     dulces[2].costo = 30;//costo Refresco
+
     for (int i = 0; i < 3; i++){
         strcpy(dulces[i].nombreDulce, nombre_dulces[i]);
         dulces[i].cantidadDisponible = 20;//Indicamos que hay 20 cantidad de productos de cada tipo
@@ -213,9 +214,13 @@ void imprimirDulceria(Dulce *dulces,int client_socket){
     char buffer[MAXBUF];
     snprintf(buffer, sizeof(buffer), "Dulces disponibles:\n");
     send(client_socket, buffer, strlen(buffer), 0);
+
+    printf("Dulces en stock\n");
     for(int i=0; i<3; i++){
         snprintf(buffer, sizeof(buffer), "Dulce %d : %s  - $%d\n",i+1 ,dulces[i].nombreDulce,dulces[i].costo);
         send(client_socket, buffer, strlen(buffer), 0);
+
+        printf("%s - cantidad disponible: %d\n",dulces[i].nombreDulce,dulces[i].cantidadDisponible);
     }
 }
 
@@ -475,7 +480,14 @@ void comprarDulceria(Dulce *dulces,int client_socket){
         return;
     }
         
+    dulces[seleccion-1].cantidadDisponible -= cantidadDulce;
+    int totalPagarDulces = cantidadDulce * dulces[seleccion-1].costo;
+    snprintf(buffer, sizeof(buffer), "Detalles de compra en dulceria:\n");
+    send(client_socket, buffer, strlen(buffer), 0);
+    snprintf(buffer, sizeof(buffer), "Dulce: %s\nCosto: $%02d\nCantidad: %d\nTotal a Pagar: $%02d\n",dulces[seleccion-1].nombreDulce,dulces[seleccion-1].costo,cantidadDulce,totalPagarDulces);
+    send(client_socket, buffer, strlen(buffer), 0);
 
+    printf("Detalles de la compra del cliente:\nDulce: %s\nCosto: $%02d\nCantidad: %d\nTotal a Pagar: $%02d\n",dulces[seleccion-1].nombreDulce,dulces[seleccion-1].costo,cantidadDulce,totalPagarDulces);
 }
 
 //funcion consultar precio de los boletos
