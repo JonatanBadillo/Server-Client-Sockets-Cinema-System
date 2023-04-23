@@ -26,6 +26,8 @@ int totalPagadoAdultos = 0;
 int totalPagadoNinos = 0;
 int totalPagado = 0;
 
+int totalPagadoEnDulces = 0;
+
 //estructura para representar la hora
 typedef struct {
     int hora;
@@ -482,6 +484,8 @@ void comprarDulceria(Dulce *dulces,int client_socket){
         
     dulces[seleccion-1].cantidadDisponible -= cantidadDulce;
     int totalPagarDulces = cantidadDulce * dulces[seleccion-1].costo;
+    totalPagadoEnDulces += totalPagarDulces;
+    totalPagado += totalPagadoEnDulces;
     snprintf(buffer, sizeof(buffer), "Detalles de compra en dulceria:\n");
     send(client_socket, buffer, strlen(buffer), 0);
     snprintf(buffer, sizeof(buffer), "Dulce: %s\nCosto: $%02d\nCantidad: %d\nTotal a Pagar: $%02d\n",dulces[seleccion-1].nombreDulce,dulces[seleccion-1].costo,cantidadDulce,totalPagarDulces);
@@ -503,44 +507,48 @@ void consultarPrecioBoletos(int client_socket) {
 //funcion para consultar precio total de la compra
 void consultarTotalPagado(int client_socket) {
     char buffer[1024];
+
+    if (totalPagado <= 0) {
+        snprintf(buffer, sizeof(buffer), "No ha comprado nada aun\n");
+        send(client_socket, buffer, strlen(buffer), 0);
+        printf("Cliente aun no compra nada\n");
+        return;
+    }
     snprintf(buffer, sizeof(buffer), "Estos son los detalles finales de su compra: \n");
     send(client_socket, buffer, strlen(buffer), 0);
 
     int cantidadAsientosTotales = cantidadAdultos + cantidadNinos;
-    snprintf(buffer, sizeof(buffer), "*Usted ha comprado %d asientos\n", cantidadAsientosTotales);
+    snprintf(buffer, sizeof(buffer), "Cantidad de asientos comprada: %02d asientos\n", cantidadAsientosTotales);
     send(client_socket, buffer, strlen(buffer), 0);
-    printf("*Cliente ha comprado %d de asientos\n", cantidadAsientosTotales);
+    printf("*Cliente ha comprado %02d de asientos\n", cantidadAsientosTotales);
 
-    if (cantidadAdultos == 1) {
-        snprintf(buffer, sizeof(buffer), "*Usted ha comprado %d boleto de adulto\n", cantidadAdultos);
-    } else {
-        snprintf(buffer, sizeof(buffer), "*Usted ha comprado %d boletos de adulto\n", cantidadAdultos);
-    }
+    snprintf(buffer, sizeof(buffer), "Boletos de Adulto: %02d\n", cantidadAdultos);
     send(client_socket, buffer, strlen(buffer), 0);
 
-    printf("*Cliente ha comprado %d de boletos de adulto\n", cantidadAdultos);
+    printf("*Cliente ha comprado %02d de boletos de adulto\n", cantidadAdultos);
 
-    if (cantidadNinos == 1) {
-        snprintf(buffer, sizeof(buffer), "*Usted ha comprado %d boleto de nino\n", cantidadNinos);
-    } else {
-        snprintf(buffer, sizeof(buffer), "*Usted ha comprado %d boletos de ninos\n", cantidadNinos);
-    }
+    snprintf(buffer, sizeof(buffer), "Boletos de nino: %02d \n", cantidadNinos);
+
     send(client_socket, buffer, strlen(buffer), 0);
-    printf("*Cliente ha comprado %d de boletos de nino\n", cantidadNinos);
+    printf("*Cliente ha comprado %02d de boletos de nino\n", cantidadNinos);
 
-    snprintf(buffer, sizeof(buffer), "*Gasto total en boletos de ninos: %d x $%d = $%d \n", cantidadNinos, PRECIO_NINOS, totalPagadoNinos);
+    snprintf(buffer, sizeof(buffer), "Precio pagado en boletos de nino: $%02d \n", totalPagadoNinos);
     send(client_socket, buffer, strlen(buffer), 0);
 
-    printf("*Cliente ha gastado $%d en boletos de ninos\n", totalPagadoNinos);
+    printf("*Cliente ha gastado $%02d en boletos de ninos\n", totalPagadoNinos);
 
-    snprintf(buffer, sizeof(buffer), "*Gasto total en boletos de adultos: %d x $%d = $%d \n", cantidadAdultos, PRECIO_ADULTO, totalPagadoAdultos);
+    snprintf(buffer, sizeof(buffer), "Precio pagado en boletos de adultos: $%02d \n", totalPagadoAdultos);
     send(client_socket, buffer, strlen(buffer), 0);
 
-    printf("*Cliente ha gastado $%d en boletos de adulto\n", totalPagadoAdultos);
+    printf("*Cliente ha gastado $%02d en boletos de adulto\n", totalPagadoAdultos);
+
+
+    snprintf(buffer, sizeof(buffer), "Precio pagado en dulces: $%02d \n", totalPagadoEnDulces);
+    send(client_socket, buffer, strlen(buffer), 0);
 
     snprintf(buffer, sizeof(buffer), "Gasto total: $%d \n", totalPagado);
     send(client_socket, buffer, strlen(buffer), 0);
-    printf("*Cliente ha gastado un TOTAL de $%d \n", totalPagado);
+    printf("*Cliente ha gastado un TOTAL de $%02d \n", totalPagado);
 }
 
 
