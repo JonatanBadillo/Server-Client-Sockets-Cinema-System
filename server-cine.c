@@ -65,6 +65,7 @@ void handle_client(int client_socket, Sala *salas,Dulce *dulces) {
     cantidadAdultos = 0;
     totalPagadoNinos = 0;
     totalPagadoAdultos = 0;
+    totalPagadoEnDulces = 0;
     totalPagado = 0;
     while (1) {
         memset(buffer, 0, MAXBUF);
