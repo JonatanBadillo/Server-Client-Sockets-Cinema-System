@@ -54,7 +54,7 @@ void seleccionarPelicula(Sala *salas, int client_socket);
 void consultarPrecioBoletos(int client_socket);
 void consultarTotalPagado(int client_socket);
 void imprimirDulceria(Dulce *dulces,int client_socket);
-
+void comprarDulceria(Dulce *dulces,int client_socket);
 
 
 
@@ -81,7 +81,7 @@ void handle_client(int client_socket, Sala *salas,Dulce *dulces) {
                  "5.Ver Dulceria \n"
                  "6.Comprar en Dulceria \n"
                  "7.Salir \n"
-                 "Elige la opcion a consultar: >\n");
+                 "Elige la opcion a consultar: \n>");
         send(client_socket, buffer, strlen(buffer), 0);
 
         memset(buffer, 0, MAXBUF);
@@ -98,30 +98,31 @@ void handle_client(int client_socket, Sala *salas,Dulce *dulces) {
 
         switch (opcion) {
             case 1:
-                printf("Cliente ha seleccionado la opcion 1 de ver las Funciones disponibles\n");
+                printf(">Cliente ha seleccionado la opcion 1 de ver las Funciones disponibles\n");
                 imprimirFunciones(salas, client_socket);
                 break;
             case 2:
-                printf("Cliente ha seleccionado la opcion 2 de Comprar Entradas\n");
+                printf(">Cliente ha seleccionado la opcion 2 de Comprar Entradas\n");
                 seleccionarPelicula(salas, client_socket);
                 break;
             case 3:
-                printf("Cliente ha seleccionado la opcion 3 de ver el precio de los boletos\n");
+                printf(">Cliente ha seleccionado la opcion 3 de ver el precio de los boletos\n");
                 consultarPrecioBoletos(client_socket);
                 break;
             case 4:
-                printf("Cliente ha seleccionado la opcion 4 de ver el Total Pagado:\n");
+                printf(">Cliente ha seleccionado la opcion 4 de ver el Total Pagado:\n");
                 consultarTotalPagado(client_socket);
                 break;
             case 5:
-                printf("Cliente ha seleccionado la opcion 5 de ver el catalogo de dulceria:\n");
+                printf(">Cliente ha seleccionado la opcion 5 de ver el catalogo de dulceria\n");
                 imprimirDulceria(dulces,client_socket);
                 break;
             case 6:
-                printf("Cliente ha seleccionado la opcion 6 de comprar en dulceria:\n");
+                printf(">Cliente ha seleccionado la opcion 6 de comprar en dulceria\n");
+                comprarDulceria(dulces,client_socket);
                 break;
             case 7:
-                printf("Cliente desconectado\n");
+                printf(">Cliente desconectado\n");
                 snprintf(buffer, sizeof(buffer), "--------------------------------\nAdios!\n--------------------------------\n");
                 send(client_socket, buffer, strlen(buffer), 0);
                 close(client_socket); // Cierra el socket del cliente
@@ -421,7 +422,61 @@ void seleccionarPelicula(Sala *salas, int client_socket) {
     }
 }
 
+//funcion para comprar dulces
+void comprarDulceria(Dulce *dulces,int client_socket){
+    char buffer[MAXBUF];
+    snprintf(buffer, sizeof(buffer), "Seleccione un dulce:\n");
+    send(client_socket, buffer, strlen(buffer), 0);
 
+    for (int i = 0; i < 3; i++) {
+        snprintf(buffer, sizeof(buffer), "%d - %s - $%d\n", i+1, dulces[i].nombreDulce,dulces[i].costo);
+        send(client_socket, buffer, strlen(buffer), 0);
+    }
+    snprintf(buffer, sizeof(buffer), ">");
+    send(client_socket, buffer, strlen(buffer), 0);
+
+    int seleccion;
+    memset(buffer, 0, sizeof(buffer));
+    if (recv(client_socket, buffer, sizeof(buffer), 0) <= 0) {
+        return;
+    }
+    sscanf(buffer, "%d", &seleccion);
+    printf("Cliente selecciono el dulce: %s\n", dulces[seleccion - 1].nombreDulce);
+
+    if (seleccion < 1 || seleccion > 3) {
+        snprintf(buffer, sizeof(buffer), "Opcion invalida\n");
+        send(client_socket, buffer, strlen(buffer), 0);
+        printf("Cliente selecciono Dulce Invalido\n");
+        return;
+    }
+
+
+    if (dulces[seleccion-1].cantidadDisponible <=0) {
+        snprintf(buffer, sizeof(buffer), "Ya no disponemos del dulce solicitado\n");
+        send(client_socket, buffer, strlen(buffer), 0);
+        printf("Ya no contamos con %s\n",dulces[seleccion-1].nombreDulce);
+        return;
+    }
+
+    snprintf(buffer, sizeof(buffer), "Ingrese la cantidad de %s que desea comprar:\n>",dulces[seleccion-1].nombreDulce);
+    send(client_socket, buffer, strlen(buffer), 0);
+    int cantidadDulce;
+    memset(buffer, 0, sizeof(buffer));
+    if (recv(client_socket, buffer, sizeof(buffer), 0) <= 0) {
+        return;
+    }
+    sscanf(buffer, "%d", &cantidadDulce);
+    printf("Cantidad que el cliente desea comprar: %d \n", cantidadDulce);
+
+    if (cantidadDulce > dulces[seleccion-1].cantidadDisponible) {
+        snprintf(buffer, sizeof(buffer), "No contamos con la cantidad del dulce solicitado en stock\n");
+        send(client_socket, buffer, strlen(buffer), 0);
+        printf("Cliente ingreso una mayor cantidad de dulces de las que se encuentra en stock\n");
+        return;
+    }
+        
+
+}
 
 //funcion consultar precio de los boletos
 void consultarPrecioBoletos(int client_socket) {
