@@ -17,6 +17,7 @@
 #define PRECIO_NINOS 30
 #define SALAS_TOTALES 5
 
+
 //variables globales
 //Estas variables nos ayudaran a poder consultar los detalles finales de nuestra compra
 int cantidadAdultos = 0;
@@ -41,17 +42,24 @@ typedef struct {
     int cuposDisponibles[4]; // Variable para almacenar los cupos disponibles de la sala
 } Sala;
 
+typedef struct {
+    char nombreDulce[50];
+    int costo;
+    int cantidadDisponible;
+} Dulce;
+
 //PROTOTIPO DE FUNCIONES
 void imprimirFunciones(Sala *salas, int client_socket);
 void seleccionarPelicula(Sala *salas, int client_socket);
 void consultarPrecioBoletos(int client_socket);
 void consultarTotalPagado(int client_socket);
+void imprimirDulceria(Dulce *dulces,int client_socket);
 
 
 
 
 //funciones para manejar solicitudes del cliente
-void handle_client(int client_socket, Sala *salas) {
+void handle_client(int client_socket, Sala *salas,Dulce *dulces) {
     char buffer[MAXBUF];
     int opcion;
     cantidadNinos = 0;
@@ -70,8 +78,10 @@ void handle_client(int client_socket, Sala *salas) {
                  "2.Comprar entradas \n"
                  "3.Consultar Precios de Entrada \n"
                  "4.Consultar Precio Total de la compra\n"
-                 "5.Salir \n"
-                 "Elige la opcion a consultar: \n");
+                 "5.Ver Dulceria \n"
+                 "6.Comprar en Dulceria \n"
+                 "7.Salir \n"
+                 "Elige la opcion a consultar: >\n");
         send(client_socket, buffer, strlen(buffer), 0);
 
         memset(buffer, 0, MAXBUF);
@@ -80,7 +90,7 @@ void handle_client(int client_socket, Sala *salas) {
         }
         sscanf(buffer, "%d", &opcion);
 
-        if (opcion < 1 || opcion > 5) {
+        if (opcion < 1 || opcion > 7) {
             snprintf(buffer, sizeof(buffer), "Opcion invalida, vuelva intentar\n");
             send(client_socket, buffer, strlen(buffer), 0);
             continue;
@@ -100,22 +110,43 @@ void handle_client(int client_socket, Sala *salas) {
                 consultarPrecioBoletos(client_socket);
                 break;
             case 4:
-            printf("Cliente ha seleccionado la opcion 4 de ver el Total Pagado:\n");
+                printf("Cliente ha seleccionado la opcion 4 de ver el Total Pagado:\n");
                 consultarTotalPagado(client_socket);
                 break;
             case 5:
+                printf("Cliente ha seleccionado la opcion 5 de ver el catalogo de dulceria:\n");
+                imprimirDulceria(dulces,client_socket);
+                break;
+            case 6:
+                printf("Cliente ha seleccionado la opcion 6 de comprar en dulceria:\n");
+                break;
+            case 7:
                 printf("Cliente desconectado\n");
                 snprintf(buffer, sizeof(buffer), "--------------------------------\nAdios!\n--------------------------------\n");
                 send(client_socket, buffer, strlen(buffer), 0);
                 close(client_socket); // Cierra el socket del cliente
-                return;
+                return;      
         }
     }
 }
 
 
 
+void inicializarDulces(Dulce *dulces){
+    const char *nombre_dulces[] = {
+        "Palomitas",// Nombre de la pelicula de la sala 1
+        "Nachos", //Nombre pelicula de sala 2
+        "Refresco"
+    };
 
+    dulces[0].costo = 75;//costo palomitas
+    dulces[1].costo = 55;//costo nachos
+    dulces[2].costo = 30;//costo Refresco
+    for (int i = 0; i < 3; i++){
+        strcpy(dulces[i].nombreDulce, nombre_dulces[i]);
+        dulces[i].cantidadDisponible = 20;//Indicamos que hay 20 cantidad de productos de cada tipo
+    }
+}
 
 
 
@@ -174,6 +205,17 @@ void imprimirFunciones(Sala *salas, int client_socket) {
     }
     snprintf(buffer, sizeof(buffer), "\n");
     send(client_socket, buffer, strlen(buffer), 0);
+}
+
+//funcion para imprimir el catalogo de dulceria
+void imprimirDulceria(Dulce *dulces,int client_socket){
+    char buffer[MAXBUF];
+    snprintf(buffer, sizeof(buffer), "Dulces disponibles:\n");
+    send(client_socket, buffer, strlen(buffer), 0);
+    for(int i=0; i<3; i++){
+        snprintf(buffer, sizeof(buffer), "Dulce %d : %s  - $%d\n",i+1 ,dulces[i].nombreDulce,dulces[i].costo);
+        send(client_socket, buffer, strlen(buffer), 0);
+    }
 }
 
 void imprimirAsientosDisponibles(Sala *sala, int num_horario, int client_socket) {
@@ -443,6 +485,9 @@ int main() {
     Sala salas[SALAS_TOTALES];
     inicializarSalas(salas);
 
+    Dulce dulces[3];
+    inicializarDulces(dulces);
+
     // Crea el socket del servidor
     int server_socket, client_socket;
     struct sockaddr_in server_addr, client_addr;
@@ -481,7 +526,7 @@ int main() {
 
         printf("Cliente conectado: %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 
-        handle_client(client_socket, salas);
+        handle_client(client_socket, salas, dulces);
     }
 
     // Cierra el socket del servidor
