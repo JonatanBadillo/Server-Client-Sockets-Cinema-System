@@ -274,7 +274,7 @@ void venderBoletosHorario(Sala *salas, int num_sala, int num_horario, int client
     // Mandamos a llamar la funcion que imprime los asientos disponibles para la sala de ese horario
     imprimirAsientosDisponibles(sala, num_horario, client_socket);
     // Solicita al cliente que seleccione un número de asientos
-    snprintf(buffer, sizeof(buffer), "Ingrese el numero de asientos que desea comprar: ");
+    snprintf(buffer, sizeof(buffer), "Ingrese el numero de asientos que desea comprar: \n>");
     send(client_socket, buffer, strlen(buffer), 0);
     memset(buffer, 0, sizeof(buffer));
     if (recv(client_socket, buffer, sizeof(buffer), 0) <= 0) {
@@ -297,7 +297,7 @@ void venderBoletosHorario(Sala *salas, int num_sala, int num_horario, int client
     }
     // Pregunta al cliente cuántos boletos son para adultos y cuántos para niños
     int num_adultos = 0, num_ninos = 0;
-    snprintf(buffer, sizeof(buffer), "Ingrese el numero de boletos para adultos: ");
+    snprintf(buffer, sizeof(buffer), "Ingrese el numero de boletos para adultos: \n>");
     send(client_socket, buffer, strlen(buffer), 0);
     memset(buffer, 0, sizeof(buffer));
     if (recv(client_socket, buffer, sizeof(buffer), 0) <= 0) {
@@ -318,14 +318,14 @@ void venderBoletosHorario(Sala *salas, int num_sala, int num_horario, int client
     // Registra los asientos seleccionados
     for (int i = 0; i < num_asientos; i++) {
         int fila = 0, columna = 0;
-        snprintf(buffer, sizeof(buffer), "Ingrese la fila del asiento %d: \n", i + 1);
+        snprintf(buffer, sizeof(buffer), "Ingrese la fila del asiento %d: \n>", i + 1);
         send(client_socket, buffer, strlen(buffer), 0);
         memset(buffer, 0, sizeof(buffer));
         if (recv(client_socket, buffer, sizeof(buffer), 0) <= 0) {
             return;
         }
         sscanf(buffer, "%d", &fila);
-        snprintf(buffer, sizeof(buffer), "Ingrese la columna del asiento %d: \n", i + 1);
+        snprintf(buffer, sizeof(buffer), "Ingrese la columna del asiento %d: \n>", i + 1);
         send(client_socket, buffer, strlen(buffer), 0);
         memset(buffer, 0, sizeof(buffer));
         if (recv(client_socket, buffer, sizeof(buffer), 0) <= 0) {
@@ -377,6 +377,9 @@ void seleccionarPelicula(Sala *salas, int client_socket) {
         send(client_socket, buffer, strlen(buffer), 0);
     }
 
+    snprintf(buffer, sizeof(buffer), ">");
+    send(client_socket, buffer, strlen(buffer), 0);
+
     memset(buffer, 0, sizeof(buffer));
     if (recv(client_socket, buffer, sizeof(buffer), 0) <= 0) {
         return;
@@ -406,6 +409,9 @@ void seleccionarPelicula(Sala *salas, int client_socket) {
             numSala = salas[i].noSalaCine;
 
             int seleccion_horario = 0;
+            snprintf(buffer, sizeof(buffer), ">");
+            send(client_socket, buffer, strlen(buffer), 0);
+
             memset(buffer, 0, sizeof(buffer));
             if (recv(client_socket, buffer, sizeof(buffer), 0) <= 0) {
                 return;
