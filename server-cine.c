@@ -8,8 +8,6 @@
 
 // definimos nuestro puerto
 #define PORT 8080
-//el número máximo de conexiones que nuestro servidor aceptará.
-#define MAX_CONNECTIONS 3
 //el tamaño máximo del buffer que utilizaremos para leer y escribir datos en el socket.
 #define MAXBUF 1024
 
@@ -25,7 +23,6 @@ int cantidadNinos = 0;
 int totalPagadoAdultos = 0;
 int totalPagadoNinos = 0;
 int totalPagado = 0;
-
 int totalPagadoEnDulces = 0;
 
 //estructura para representar la hora
@@ -562,51 +559,65 @@ void consultarTotalPagado(int client_socket) {
 
 //funcion principal
 int main() {
-
+    // Declara un array de salas
     Sala salas[SALAS_TOTALES];
+    // Inicializa las salas
     inicializarSalas(salas);
 
+    // Declara un array de dulces
     Dulce dulces[3];
+    // Inicializa los dulces
     inicializarDulces(dulces);
 
-    // Crea el socket del servidor
+    // Declara variables para el socket del servidor y del cliente
     int server_socket, client_socket;
+    // Declara las estructuras para las direcciones del servidor y del cliente
     struct sockaddr_in server_addr, client_addr;
+    // Declara una variable para almacenar la longitud de las direcciones
     socklen_t addr_len;
 
+    // Crea el socket del servidor
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket < 0) {
         perror("Error creando socket");
         return 1;
     }
 
+    // Configura la dirección del servidor
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT);
     server_addr.sin_addr.s_addr = INADDR_ANY;
 
+    // Asocia el socket del servidor a la dirección configurada
     if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         perror("Error en bind");
         return 1;
     }
 
+    // Pone al servidor en modo de escucha
     if (listen(server_socket, 5) < 0) {
         perror("Error en listen");
         return 1;
     }
 
+    // Informa que el servidor está escuchando en el puerto especificado
     printf("Servidor escuchando en el puerto %d\n", PORT);
 
+    // Bucle infinito para aceptar conexiones de clientes
     while (1) {
         addr_len = sizeof(client_addr);
+        // Acepta una conexión de cliente
         client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &addr_len);
 
         if (client_socket < 0) {
             perror("Error en accept");
             continue;
         }
-
+        
+        // Informa que un cliente se ha conectado
         printf("Cliente conectado: %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 
+        // Maneja la comunicación con el cliente
         handle_client(client_socket, salas, dulces);
     }
 
