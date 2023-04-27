@@ -45,7 +45,7 @@ int main() {
     init_pair(1, COLOR_WHITE, COLOR_BLACK);
     init_pair(2, COLOR_BLACK, COLOR_YELLOW);
     init_pair(3, COLOR_WHITE, COLOR_BLUE);
-    bkgd(COLOR_PAIR(1));
+    bkgd(COLOR_PAIR(2));
     attron(COLOR_PAIR(1));
 
     // Mostrar dirección y puerto del servidor
@@ -54,7 +54,7 @@ int main() {
 
     // Crear ventana de desplazamiento
     int max_lines = LINES - 2;
-    WINDOW *scrollwin = newwin(max_lines, COLS, 1, 0);
+    WINDOW *scrollwin = newwin(max_lines, COLS, 1, 30);
     scrollok(scrollwin, TRUE);
     wsetscrreg(scrollwin, 0, max_lines - 1);
     wbkgd(scrollwin, COLOR_PAIR(2));
