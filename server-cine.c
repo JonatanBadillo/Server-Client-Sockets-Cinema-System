@@ -226,22 +226,41 @@ void imprimirDulceria(Dulce *dulces,int client_socket){
 
 void imprimirAsientosDisponibles(Sala *sala, int num_horario, int client_socket) {
     char buffer[MAXBUF];
+
     snprintf(buffer, sizeof(buffer), "Asientos disponibles:\n");
     send(client_socket, buffer, strlen(buffer), 0);
 
+    snprintf(buffer, sizeof(buffer), "-------------------------------\n");
+    send(client_socket, buffer, strlen(buffer), 0);
+
+    snprintf(buffer, sizeof(buffer), "|          PANTALLA            |\n");
+    send(client_socket, buffer, strlen(buffer), 0);
+
+    snprintf(buffer, sizeof(buffer), "-------------------------------\n");
+    send(client_socket, buffer, strlen(buffer), 0);
+
+
+
+    memset(buffer, 0, MAXBUF);
+
     for (int fila = 0; fila < 2; fila++) {
-        memset(buffer, 0, MAXBUF);
         for (int columna = 0; columna < 5; columna++) {
             if (sala->asientos[num_horario][fila][columna] == 0) {
-                snprintf(buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), "[%d,%d] ", fila+1, columna+1);
+                snprintf(buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), "  -[%d]-  ", (fila * 5) + columna + 1);
             } else if (sala->asientos[num_horario][fila][columna] == 1) {
-                snprintf(buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), "[X,X] ");
+                snprintf(buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), "  -[X]-  ");
             }
         }
         snprintf(buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), "\n");
-        send(client_socket, buffer, strlen(buffer), 0);
     }
+
+    send(client_socket, buffer, strlen(buffer), 0);
+
+    snprintf(buffer, sizeof(buffer), "-[X]- ASIENTO NO DISPONIBLE\n");
+    send(client_socket, buffer, strlen(buffer), 0);
 }
+
+
 
 
 //Funcion  para vender boletos por horario
@@ -314,6 +333,7 @@ void venderBoletosHorario(Sala *salas, int num_sala, int num_horario, int client
     cantidadNinos += num_ninos;
 
     // Registra los asientos seleccionados
+    /*
     for (int i = 0; i < num_asientos; i++) {
         int fila = 0, columna = 0;
         snprintf(buffer, sizeof(buffer), "Ingrese la fila del asiento %d: \n>", i + 1);
@@ -342,6 +362,64 @@ void venderBoletosHorario(Sala *salas, int num_sala, int num_horario, int client
             sala->asientos[num_horario][fila][columna] = 1;
         }
     }
+    */
+
+   for (int i = 0; i < num_asientos; i++){
+    snprintf(buffer, sizeof(buffer), "Seleccione el asiento de su preferencia: \n>");
+    send(client_socket, buffer, strlen(buffer), 0);
+    memset(buffer, 0, sizeof(buffer));
+    int asiento;
+    if (recv(client_socket, buffer, sizeof(buffer), 0) <= 0) {
+        return;
+    }
+    sscanf(buffer, "%d", &asiento);
+
+    int fila,columna=0;
+
+    
+    if(asiento == 1){
+        fila = 0;
+        columna = 0;
+    }else if(asiento == 2){
+        fila = 0;
+        columna = 1;
+    }else if(asiento == 3){
+        fila = 0;
+        columna = 2;
+    }else if(asiento == 4){
+        fila = 0;
+        columna = 3;
+    }else if(asiento == 5){
+        fila = 0;
+        columna = 4;
+    }else if(asiento == 6){
+        fila = 1;
+        columna = 0;
+    }else if(asiento == 7){
+        fila = 1;
+        columna = 1;
+    }else if(asiento == 8){
+        fila = 1;
+        columna = 2;
+    }else if(asiento == 9){
+        fila = 1;
+        columna = 3;
+    }else if(asiento == 10){
+        fila = 1;
+        columna = 4;
+    }
+
+    if (fila < 0 || fila > 1 || columna < 0 || columna > 4 || sala->asientos[num_horario][fila][columna] == 1) {
+        snprintf(buffer, sizeof(buffer), "Asiento invalido\n");
+        send(client_socket, buffer, strlen(buffer), 0);
+        i--;
+        printf("El cliente selecciono asiento invalido\n");
+    } else {
+        sala->asientos[num_horario][fila][columna] = 1;
+    }
+ 
+   }
+    
 
     // Decrementa el número de cupos disponibles para el horario seleccionado
     sala->cuposDisponibles[num_horario] -= num_asientos;
