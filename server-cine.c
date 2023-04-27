@@ -70,9 +70,9 @@ void handle_client(int client_socket, Sala *salas,Dulce *dulces) {
     while (1) {
         memset(buffer, 0, MAXBUF);
         snprintf(buffer, sizeof(buffer),
-                 "--------------------------------\n"
-                 "BIENVENIDO A CINE-BUAP\n"
-                 "--------------------------------\n"
+                 "---------------------------------------------\n"
+                 "|            BIENVENIDO A CINE-BUAP          |\n"
+                 "---------------------------------------------\n"
                  "Opciones a realizar: \n"
                  "1.Ver Catalogo de Peliculas \n"
                  "2.Comprar entradas \n"
@@ -81,6 +81,7 @@ void handle_client(int client_socket, Sala *salas,Dulce *dulces) {
                  "5.Ver Dulceria \n"
                  "6.Comprar en Dulceria \n"
                  "7.Salir \n"
+                 "---------------------------------------------\n"
                  "Elige la opcion a consultar: \n>");
         send(client_socket, buffer, strlen(buffer), 0);
 
@@ -193,7 +194,7 @@ void inicializarSalas(Sala *salas) {
 //funcion para imprimir peliculas disponibles
 void imprimirFunciones(Sala *salas, int client_socket) {
     char buffer[MAXBUF];
-    snprintf(buffer, sizeof(buffer), "Salas disponibles:\n");
+    snprintf(buffer, sizeof(buffer), "---------------------------------------------\nSalas disponibles:\n");
     send(client_socket, buffer, strlen(buffer), 0);
     for (int i = 0; i < SALAS_TOTALES; i++) {
         snprintf(buffer, sizeof(buffer), "Sala %d -> %s:\n", salas[i].noSalaCine, salas[i].nombrePelicula);
@@ -212,7 +213,7 @@ void imprimirFunciones(Sala *salas, int client_socket) {
 //funcion para imprimir el catalogo de dulceria
 void imprimirDulceria(Dulce *dulces,int client_socket){
     char buffer[MAXBUF];
-    snprintf(buffer, sizeof(buffer), "Dulces disponibles:\n");
+    snprintf(buffer, sizeof(buffer), "---------------------------------------------\nDulces disponibles:\n");
     send(client_socket, buffer, strlen(buffer), 0);
 
     printf("Dulces en stock\n");
@@ -230,13 +231,15 @@ void imprimirAsientosDisponibles(Sala *sala, int num_horario, int client_socket)
     snprintf(buffer, sizeof(buffer), "Asientos disponibles:\n");
     send(client_socket, buffer, strlen(buffer), 0);
 
-    snprintf(buffer, sizeof(buffer), "-------------------------------\n");
+    snprintf(buffer, sizeof(buffer), "---------------------------------------------\n");
     send(client_socket, buffer, strlen(buffer), 0);
-
-    snprintf(buffer, sizeof(buffer), "|          PANTALLA            |\n");
+    snprintf(buffer, sizeof(buffer), "|                                           |\n");
     send(client_socket, buffer, strlen(buffer), 0);
-
-    snprintf(buffer, sizeof(buffer), "-------------------------------\n");
+    snprintf(buffer, sizeof(buffer), "|                 PANTALLA                  |\n");
+    send(client_socket, buffer, strlen(buffer), 0);
+    snprintf(buffer, sizeof(buffer), "|                                           |\n");
+    send(client_socket, buffer, strlen(buffer), 0);
+    snprintf(buffer, sizeof(buffer), "---------------------------------------------\n");
     send(client_socket, buffer, strlen(buffer), 0);
 
 
@@ -256,7 +259,7 @@ void imprimirAsientosDisponibles(Sala *sala, int num_horario, int client_socket)
 
     send(client_socket, buffer, strlen(buffer), 0);
 
-    snprintf(buffer, sizeof(buffer), "-[X]- ASIENTO NO DISPONIBLE\n");
+    snprintf(buffer, sizeof(buffer), "\n-[X]-:ASIENTO NO DISPONIBLE\n");
     send(client_socket, buffer, strlen(buffer), 0);
 }
 
@@ -416,6 +419,7 @@ void venderBoletosHorario(Sala *salas, int num_sala, int num_horario, int client
         printf("El cliente selecciono asiento invalido\n");
     } else {
         sala->asientos[num_horario][fila][columna] = 1;
+        printf("El cliente selecciono el asiento:[%d][%d]\n",fila+1,columna+1);
     }
  
    }
@@ -445,7 +449,7 @@ void seleccionarPelicula(Sala *salas, int client_socket) {
     int seleccion = 0;
     char buffer[1024];
 
-    snprintf(buffer, sizeof(buffer), "Seleccione una pelicula:\n");
+    snprintf(buffer, sizeof(buffer), "---------------------------------------------\nSeleccione una pelicula:\n");
     send(client_socket, buffer, strlen(buffer), 0);
 
     for (int i = 0; i < SALAS_TOTALES; i++) {
@@ -514,7 +518,7 @@ void seleccionarPelicula(Sala *salas, int client_socket) {
 //funcion para comprar dulces
 void comprarDulceria(Dulce *dulces,int client_socket){
     char buffer[MAXBUF];
-    snprintf(buffer, sizeof(buffer), "Seleccione un dulce:\n");
+    snprintf(buffer, sizeof(buffer), "---------------------------------------------\nSeleccione un dulce:\n");
     send(client_socket, buffer, strlen(buffer), 0);
 
     for (int i = 0; i < 3; i++) {
@@ -573,13 +577,13 @@ void comprarDulceria(Dulce *dulces,int client_socket){
     snprintf(buffer, sizeof(buffer), "Dulce: %s\nCosto: $%02d\nCantidad: %d\nTotal a Pagar: $%02d\n",dulces[seleccion-1].nombreDulce,dulces[seleccion-1].costo,cantidadDulce,totalPagarDulces);
     send(client_socket, buffer, strlen(buffer), 0);
 
-    printf("Detalles de la compra del cliente:\nDulce: %s\nCosto: $%02d\nCantidad: %d\nTotal a Pagar: $%02d\n",dulces[seleccion-1].nombreDulce,dulces[seleccion-1].costo,cantidadDulce,totalPagarDulces);
+    printf("Detalles de la compra del cliente:\nDulce: %s\nCosto: $%02d\nCantidad: %d\nTotal a Pagar: $%02d\nCantidad restante de %s: %d ",dulces[seleccion-1].nombreDulce,dulces[seleccion-1].costo,cantidadDulce,totalPagarDulces,dulces[seleccion-1].nombreDulce,dulces[seleccion-1].cantidadDisponible);
 }
 
 //funcion consultar precio de los boletos
 void consultarPrecioBoletos(int client_socket) {
     char buffer[1024];
-    snprintf(buffer, sizeof(buffer), "Los boletos por nino tienen un costo de: $%d\n", PRECIO_NINOS);
+    snprintf(buffer, sizeof(buffer), "---------------------------------------------\nLos boletos por nino tienen un costo de: $%d\n", PRECIO_NINOS);
     send(client_socket, buffer, strlen(buffer), 0);
 
     snprintf(buffer, sizeof(buffer), "Los boletos por adulto tienen un costo de: $%d\n", PRECIO_ADULTO);
@@ -591,12 +595,12 @@ void consultarTotalPagado(int client_socket) {
     char buffer[1024];
 
     if (totalPagado <= 0) {
-        snprintf(buffer, sizeof(buffer), "No ha comprado nada aun\n");
+        snprintf(buffer, sizeof(buffer), "---------------------------------------------\nNo ha comprado nada aun\n");
         send(client_socket, buffer, strlen(buffer), 0);
         printf("Cliente aun no compra nada\n");
         return;
     }
-    snprintf(buffer, sizeof(buffer), "Estos son los detalles finales de su compra: \n");
+    snprintf(buffer, sizeof(buffer), "---------------------------------------------\nEstos son los detalles finales de su compra: \n");
     send(client_socket, buffer, strlen(buffer), 0);
 
     int cantidadAsientosTotales = cantidadAdultos + cantidadNinos;
