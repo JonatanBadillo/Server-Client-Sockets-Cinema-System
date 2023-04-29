@@ -368,7 +368,7 @@ void venderBoletosHorario(Sala *salas, int num_sala, int num_horario, int client
     */
 
    for (int i = 0; i < num_asientos; i++){
-    snprintf(buffer, sizeof(buffer), "Seleccione el asiento de su preferencia: \n>");
+    snprintf(buffer, sizeof(buffer), "Seleccione el asiento %d de su preferencia: \n>",i+1);
     send(client_socket, buffer, strlen(buffer), 0);
     memset(buffer, 0, sizeof(buffer));
     int asiento;
