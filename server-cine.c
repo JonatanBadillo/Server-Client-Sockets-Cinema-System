@@ -127,7 +127,7 @@ void handle_client(int client_socket, Sala *salas,Dulce *dulces) {
                 snprintf(buffer, sizeof(buffer), "--------------------------------\nAdios!\n--------------------------------\n");
                 send(client_socket, buffer, strlen(buffer), 0);
                 close(client_socket); // Cierra el socket del cliente
-                return;      
+                return;
         }
     }
 }
